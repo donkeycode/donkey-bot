@@ -1,0 +1,23 @@
+{
+  "name": "donkey-bot",
+  "version": "1.0.0",
+  "description": "bot bot bot",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/donkeycode/donkey-bot.git"
+  },
+  "author": "donkeycode",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/donkeycode/donkey-bot/issues"
+  },
+  "homepage": "https://github.com/donkeycode/donkey-bot#readme",
+  "dependencies": {
+    "slackbots": "^1.0.2",
+    "sqlite3": "^3.1.8"
+  }
+}
