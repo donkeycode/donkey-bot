@@ -71,9 +71,19 @@ router.post('/', function(req, res) {
       db.all('SELECT * from locations', [], function (err, locations) {
         var indexRandom = Math.floor(locations.length * Math.random(0));
         bot.postMessageToGroup(config.channel[response.channel.id], 'Ok ! On mange les gars !!! Allez au pas de course à ' + locations[indexRandom].name );
-        response.original_message.attachments.actions = [];
+        response.original_message.attachments.actions = null;
         db.get('SELECT * FROM vote_session ORDER BY id DESC LIMIT 1', [], function(err, res) {
-          bot.updateMessage(response.channel.id, res.message_id, null, response.original_message);
+          bot.updateMessage(response.channel.id, res.message_id, null, {
+            "text": response.original_message.text,
+            "attachments": [
+              {
+                "text": response.original_message.attachments[0].text,
+                "fallback": "Bah ça marche pas",
+                "color": "#f1415a",
+                "actions": []
+              }
+            ]
+          });
         });
         db.run('UPDATE vote_session SET result = ? WHERE result is NULL', [ indexRandom + 1 ]);
       });
@@ -142,7 +152,7 @@ bot.on('message', function(message) {
     return;
   }
 
-  var regex = /(bot.*(miam|mange|bouffe|choucroute))|((miam|mange|choucroute|bouffe).*bot)/g;
+  var regex = /(bot.*(miam|mange|bouffe|choucroute))|((miam|mange|choucroute|bouffe).*bot)/gi;
 
   if (message.type === 'message' && regex.test(message.text)) {
     db.get('SELECT * FROM vote_session WHERE result is NULL', function(err, row) {
