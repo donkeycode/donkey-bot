@@ -2,5 +2,4 @@
 
 exports.token = 'il-faut-le-demander-gentillement';
 exports.channel = { 'G4V8SSJAC' : 'test-bot' };
-exports.locations = [ 'Subway', 'Bagelstein', 'East 123', 'Carrefour', 'Restaurant libanais', 'Sushi' ];
 exports.oauth = 'il-faut-le-demander-gentillement';

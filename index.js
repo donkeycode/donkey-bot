@@ -44,19 +44,16 @@ router.post('/', function(req, res) {
     var session = null;
 
     db.get('SELECT * FROM vote_session ORDER BY id DESC LIMIT 1', [], function(err, row) {
-      console.log('sessions', row.id);
       session = row;
       db.get('SELECT * FROM user WHERE username = ?', [ response.user.name ], function(err, row) {
         if (!row) {
           db.run('INSERT INTO user(username) VALUES(?)', [response.user.name], function(err) {
-            console.log('new user', this.lastID);
             user = this.lastID;
             saveVote(response, user, session, res);
           });
           return;
         }
 
-        console.log('update user', row.id);
         user = row.id;
         saveVote(response, user, session, res);
       });
