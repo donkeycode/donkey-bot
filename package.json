@@ -17,6 +17,8 @@
   },
   "homepage": "https://github.com/donkeycode/donkey-bot#readme",
   "dependencies": {
+    "body-parser": "^1.17.1",
+    "express": "^4.15.2",
     "slackbots": "^1.0.2",
     "sqlite3": "^3.1.8"
   }
