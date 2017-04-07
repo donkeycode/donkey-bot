@@ -1,8 +1,9 @@
+var config = require('./config.js');
 var Bot = require('slackbots');
 
 // create a bot
 var settings = {
-    token: 'xoxb-165988949138-pivFV4F6mhjuWSPhC5Tv203c',
+    token: config.token,
     name: 'Donkey bot'
 };
 var bot = new Bot(settings);
