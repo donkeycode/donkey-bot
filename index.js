@@ -42,7 +42,6 @@ router.post('/', function(req, res) {
   if (response.callback_id === 'donkey_choice') {
     var user = null;
     var session = null;
-
     db.get('SELECT * FROM vote_session ORDER BY id DESC LIMIT 1', [], function(err, row) {
       session = row;
       db.get('SELECT * FROM user WHERE username = ?', [ response.user.name ], function(err, row) {
@@ -150,7 +149,8 @@ bot.on('message', function(message) {
   }
 
   var regex = /(bot.*(miam|mange|bouffe|choucroute))|((miam|mange|choucroute|bouffe).*bot)/gi;
-
+  var regex2 = /(aime|bon)/gi
+  var regex3 = /quoi.+manger.+?/gi
   if (message.type === 'message' && regex.test(message.text)) {
     db.get('SELECT * FROM vote_session WHERE result is NULL', function(err, row) {
       if (row) {
@@ -182,6 +182,71 @@ bot.on('message', function(message) {
         ]
       });
     });
+  } else if (message.user && message.type === 'message' && regex2.test(message.text)) {
+    db.all('SELECT * FROM locations',[],function (err, res) {
+      var locations = [];
+      res.forEach(function (result) {
+        locations.push(result.name);
+      });
+
+      if (eval("/( " + locations.join("|") + ")/gi").test(message.text)) {
+        bot.getUsers().then(function(alluser){
+          var user = getUserById(alluser, message.user);
+          var resto = eval("/( " + locations.join("|") + ")/gi").exec(message.text)[0].trim().toLowerCase();
+          db.get('SELECT * FROM user WHERE username = ?', [user.name], function (err, row) {
+            if(!row) {
+              if(/pas/gi.test(message.text)) {
+                console.log("insert pas");
+                db.run('INSERT INTO user(username, veto) VALUES(?, ?)', [user.name, resto]);
+                bot.postMessageToGroup(config.channel[message.channel],"Ça marche, je te proposerais plus: " + resto);
+              } else {
+                console.log("insert");
+                db.run('INSERT INTO user(username, veto) VALUES(?, ?)', [user.name, '']);
+                bot.postMessageToGroup(config.channel[message.channel],"Je le savais déjà.");
+              }
+              return;
+            }
+            if(row.veto && typeof row.veto === 'string') {
+              var userResto = row.veto.split('|');
+            } else {
+              var userResto = [];
+            }
+            var index = userResto.indexOf(resto);
+            if(/pas/gi.test(message.text)) {
+              if (index < 0) {
+                userResto.push(resto);
+                console.log("update pas existe");
+                db.run('UPDATE user SET veto = ? WHERE id = ?',[userResto.join('|'), row.id]);
+                bot.postMessageToGroup(config.channel[message.channel],"Ça marche, je te proposerais plus: " + resto);
+              } else {
+                console.log("update pas");
+                bot.postMessageToGroup(config.channel[message.channel],"Je le savais déjà.");
+              }
+            } else {
+              if (index >= 0) {
+                userResto.splice(index,1);
+                console.log("update existe");
+                db.run('UPDATE user SET veto = ? WHERE id = ?',[userResto.join('|'), row.id]);
+                bot.postMessageToGroup(config.channel[message.channel],"Oki doki, je pourrais te proposer: " + resto);
+              } else {
+                console.log("update")
+                bot.postMessageToGroup(config.channel[message.channel],"Je le savais déjà.");
+              }
+            }
+          });
+        });
+      }
+    })
+    return;
+  } else if (message.user && message.type === 'message' && regex3.test(message.text)) {
+    db.all('SELECT * FROM locations',[],function (err, res) {
+      var locations = [];
+      res.forEach(function (result) {
+        locations.push(result.name);
+      })
+      bot.postMessageToGroup(config.channel[message.channel],"Dans le coins il y a : "+locations.join(', '));
+    })
+    return;
   }
 });
 
@@ -253,4 +318,14 @@ function saveVote(response, user, session, res) {
       ]
     });
   });
+}
+
+function getUserById(members, id) {
+  var res = null;
+  members.members.forEach(function (member) {
+    if(member.id && member.id == id) {
+      res = member;
+    }
+  })
+  return res;
 }
